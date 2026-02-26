@@ -15,6 +15,6 @@ export const createAdmin = asyncHandler(async (req, res) => {
     if (exists) throw new Error("Admin with this email already exists");
 
     const admin = new Admin({ fullName, username, email, phone, cnic, password });
-    await admin.save(); 
+    await admin.save();
     res.json(new ApiResponse(201, admin, "Successfully created a new Admin"));
 });
