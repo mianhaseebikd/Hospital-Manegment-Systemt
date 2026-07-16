@@ -22,6 +22,7 @@ const publicDepartment = (department) => ({
   description: department?.description || "",
   icon: department?.icon || "",
   isActive: department?.isActive ?? true,
+  isPrimary: department?.isPrimary ?? false,
   createdAt: department?.createdAt,
   updatedAt: department?.updatedAt
 });
@@ -80,18 +81,24 @@ export const createDepartment = asyncHandler(async (req, res) => {
   const hospital = await requireHospital(res);
   if (!hospital) return;
 
-  const { name, code, description, isActive } = req.body || {};
+  const { name, code, description, isActive, isPrimary } = req.body || {};
   if (!name?.trim()) {
     return res.status(400).json(new ApiResponse(400, null, "Department name is required"));
   }
 
   try {
+    // If this department is set as primary, unset other primaries for this hospital
+    if (isPrimary) {
+      await Department.updateMany({ hospitalId: hospital._id }, { $set: { isPrimary: false } });
+    }
+
     const department = await Department.create({
       hospitalId: hospital._id,
       name: name.trim(),
       code: code?.trim()?.toUpperCase() || slugifyCode(name),
       description: description || "",
-      isActive: isActive !== false
+      isActive: isActive !== false,
+      isPrimary: !!isPrimary
     });
 
     return res.status(201).json(new ApiResponse(201, publicDepartment(department), "Department created"));
@@ -108,7 +115,7 @@ export const updateDepartment = asyncHandler(async (req, res) => {
   if (!hospital) return;
 
   const updates = {};
-  ["name", "code", "description", "isActive"].forEach((field) => {
+  ["name", "code", "description", "isActive", "isPrimary"].forEach((field) => {
     if (req.body?.[field] !== undefined) updates[field] = req.body[field];
   });
 
@@ -117,6 +124,11 @@ export const updateDepartment = asyncHandler(async (req, res) => {
   if (!updates.code && updates.name) updates.code = slugifyCode(updates.name);
 
   try {
+    // If setting this department as primary, clear others first
+    if (updates.isPrimary) {
+      await Department.updateMany({ hospitalId: hospital._id }, { $set: { isPrimary: false } });
+    }
+
     const department = await Department.findOneAndUpdate(
       { _id: req.params.id, hospitalId: hospital._id },
       { $set: updates },

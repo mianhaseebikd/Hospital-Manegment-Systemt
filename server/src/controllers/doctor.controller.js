@@ -19,6 +19,7 @@ const publicDoctor = (doctor) => ({
   salaryType: doctor?.salaryType || "Fixed",
   baseSalary: doctor?.baseSalary || 0,
   commissionPercentage: doctor?.commissionPercentage || 0,
+  department: doctor?.department || null,
   createdAt: doctor?.createdAt,
   updatedAt: doctor?.updatedAt
 });
@@ -67,20 +68,46 @@ const validateDoctorBasics = (payload, requireAll = false) => {
 const hasValidationErrors = (errors) => Object.keys(errors).length > 0;
 
 export const createDoctor = asyncHandler(async (req, res) => {
-  const { fullName, email, phone, cnic } = req.body || {};
-  const validationErrors = validateDoctorBasics(req.body, true);
+  const payload = req.body || {};
+  const { fullName, email, phone, cnic } = payload;
+
+  // require basic fields + dutyTimings and baseSalary as essential per product request
+  const validationErrors = validateDoctorBasics(payload, true);
+
+  if (!payload.dutyTimings || !String(payload.dutyTimings).trim()) {
+    validationErrors.dutyTimings = "Duty timings are required.";
+  }
+
+  const baseSalaryNum = Number(payload.baseSalary || 0);
+  if (isNaN(baseSalaryNum) || baseSalaryNum <= 0) {
+    validationErrors.baseSalary = "Base salary must be a positive number.";
+  }
 
   if (hasValidationErrors(validationErrors)) {
     return res.status(422).json(new ApiResponse(422, { errors: validationErrors }, "Please check the highlighted fields"));
   }
 
   try {
-    const doctor = await Doctor.create({
-      fullName: fullName.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      cnic: cnic.trim()
-    });
+    const toCreate = {
+      fullName: String(fullName).trim(),
+      email: String(email).trim(),
+      phone: String(phone).trim(),
+      cnic: String(cnic).trim(),
+      specialization: payload.specialization ? String(payload.specialization).trim() : "",
+      bio: payload.bio ? String(payload.bio).trim() : "",
+      profileImageUrl: payload.profileImageUrl || "",
+      coverImageUrl: payload.coverImageUrl || "",
+      qualifications: normalizeQualifications(payload.qualifications),
+      experienceYears: Number(payload.experienceYears) || 0,
+      dutyTimings: String(payload.dutyTimings).trim(),
+      consultationFee: Number(payload.consultationFee) || 0,
+      salaryType: payload.salaryType || "Fixed",
+      baseSalary: baseSalaryNum,
+      commissionPercentage: Number(payload.commissionPercentage) || 0,
+      department: payload.department || null
+    };
+
+    const doctor = await Doctor.create(toCreate);
 
     return res.status(201).json(new ApiResponse(201, publicDoctor(doctor), "Doctor created"));
   } catch (err) {
@@ -131,7 +158,8 @@ export const updateDoctor = asyncHandler(async (req, res) => {
     "consultationFee",
     "salaryType",
     "baseSalary",
-    "commissionPercentage"
+    "commissionPercentage",
+    "department"
   ];
 
   const updates = {};

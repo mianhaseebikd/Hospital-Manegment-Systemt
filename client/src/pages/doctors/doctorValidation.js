@@ -32,6 +32,16 @@ export const validateDoctorBasics = (values) => {
     errors.cnic = "Use 13 digits or XXXXX-XXXXXXX-X format.";
   }
 
+  // require duty timings and base salary on add
+  if (!values.dutyTimings || !String(values.dutyTimings).trim()) {
+    errors.dutyTimings = "Duty timings are required.";
+  }
+
+  const base = Number(values.baseSalary || 0);
+  if (isNaN(base) || base <= 0) {
+    errors.baseSalary = "Base salary must be a positive number.";
+  }
+
   return errors;
 };
 

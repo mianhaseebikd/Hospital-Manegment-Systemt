@@ -90,4 +90,9 @@ const doctorSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-doctorSche
+doctorSchema.index({ fullName: 1 });
+doctorSchema.index({ specialization: 1 });
+
+doctorSchema.index({ department: 1 });
+
+export const Doctor = mongoose.model("Doctor", doctorSchema);
