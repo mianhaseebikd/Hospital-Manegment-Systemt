@@ -1,0 +1,12 @@
+
+> hms-client@1.0.0 dev
+> vite --host 0.0.0.0 --port 5173 --host 0.0.0.0 --port 5174
+
+
+  [32m[1mVITE[22m v7.3.5[39m  [2mready in [0m[1m1017[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5174[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.32:[1m5174[22m/[39m
+[2m12:36:14 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LoginPage.jsx, /src/index.css[22m
+[2m12:36:14 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LoginPage.jsx, /src/index.css[22m
+[2m12:40:58 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/ui/MetricCard.jsx[22m
